@@ -1,0 +1,10 @@
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Добавить упражнение к тренировке от {{ workout.date }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Добавить упражнение</button>
+    </form>
+{% endblock %}

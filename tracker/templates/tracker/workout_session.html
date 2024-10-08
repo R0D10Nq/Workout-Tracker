@@ -1,0 +1,68 @@
+<!-- tracker/templates/tracker/workout_session.html -->
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h2>
+
+    <!-- Кнопка для завершения тренировки -->
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Завершить тренировку</button>
+    </form>
+
+    <!-- Форма для добавления упражнений -->
+    <h3>Добавить упражнение</h3>
+    <form method="post" action="{% url 'add_workout_exercise' workout.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Добавить упражнение</button>
+    </form>
+
+    <h3>Упражнения</h3>
+    <ul>
+        {% for we in exercises %}
+            <li>
+                <strong>{{ we.exercise.name }}</strong>
+                <!-- Форма для добавления подходов через AJAX -->
+                <form class="add-set-form" data-workout-exercise-id="{{ we.id }}">
+                    {% csrf_token %}
+                    <input type="number" name="repetitions" placeholder="Повторения">
+                    <input type="number" name="weight" placeholder="Вес">
+                    <button type="submit" class="btn btn-secondary btn-sm">Добавить подход</button>
+                </form>
+                <ul class="sets-list" id="sets-list-{{ we.id }}">
+                    {% for set in we.set_set.all %}
+                        <li>{{ set.repetitions }} повторений с весом {{ set.weight }} кг</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.add-set-form').on('submit', function (e) {
+                e.preventDefault();
+                let form = $(this);
+                let workoutExerciseId = form.data('workout-exercise-id');
+                let data = form.serializeArray();
+                data.push({name: 'workout_exercise_id', value: workoutExerciseId});
+                $.ajax({
+                    url: "{% url 'add_set_ajax' %}",
+                    type: 'POST',
+                    data: data,
+                    success: function (response) {
+                        if (response.set_info) {
+                            $('#sets-list-' + workoutExerciseId).append('<li>' + response.set_info + '</li>');
+                            form[0].reset();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

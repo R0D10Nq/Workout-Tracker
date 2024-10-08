@@ -1,0 +1,10 @@
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Удалить упражнение "{{ exercise.name }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Удалить</button>
+        <a href="{% url 'exercises' %}" class="btn btn-secondary">Отменить</a>
+    </form>
+{% endblock %}

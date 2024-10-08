@@ -1,0 +1,15 @@
+<!-- tracker/templates/tracker/workout_list.html -->
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Список тренировок</h2>
+    <ul class="list-group">
+        {% for workout in workouts %}
+            <li class="list-group-item">
+                <a href="{% url 'workout_detail' workout.id %}">{{ workout.start_time|date:"d.m.Y H:i" }}</a>
+                <a href="{% url 'edit_workout' workout.id %}"
+                   class="btn btn-sm btn-secondary float-right">Редактировать</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

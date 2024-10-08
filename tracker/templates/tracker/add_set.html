@@ -1,0 +1,14 @@
+{#Шаблон для добавления подхода (сета)#}
+
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Добавить подход для упражнения {{ workout_exercise.exercise.name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Добавить подход</button>
+    </form>
+    <a href="{% url 'add_workout_exercise' workout_id=workout_exercise.workout.id %}" class="btn btn-secondary mt-3">Вернуться
+        к упражнениям</a>
+{% endblock %}

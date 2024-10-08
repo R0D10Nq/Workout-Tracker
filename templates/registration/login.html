@@ -1,0 +1,14 @@
+{#Шаблон страницы входа в систему. Используется стандартной системой аутентификации Django#}
+
+<!-- templates/registration/login.html -->
+{% extends 'tracker/base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <h2>Вход в систему</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+{% endblock %}

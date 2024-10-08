@@ -1,0 +1,8 @@
+<!-- tracker/templates/tracker/home.html -->
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2 class="animate__animated animate__fadeIn">Добро пожаловать в Workout Tracker</h2>
+    <p>Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a> для
+        продолжения.</p>
+{% endblock %}

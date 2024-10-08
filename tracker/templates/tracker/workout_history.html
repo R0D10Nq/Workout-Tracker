@@ -1,0 +1,109 @@
+<!-- tracker/templates/tracker/workout_history.html -->
+{% extends 'tracker/base.html' %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h2>История тренировок</h2>
+
+    <p>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
+                aria-expanded="false" aria-controls="collapseExample">
+            Фильтр
+        </button>
+    </p>
+    <div class="collapse" id="collapseExample">
+        <div class="card card-body">
+            <form method="get" class="mb-3">
+        {{ filter.form|crispy }}
+        <button type="submit" class="btn btn-primary">Фильтровать</button>
+        <a href="{% url 'workout_history' %}" class="btn btn-secondary">Сбросить</a>
+    </form>
+        </div>
+    </div>
+
+
+
+    <ul class="list-group mt-3">
+        {% for workout in filter.qs %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ workout.start_time|date:"d.m.Y H:i" }}</strong> -
+                    {% if workout.duration %}
+                        {{ workout.duration }}
+                    {% else %}
+                        Не завершена
+                    {% endif %}
+                </div>
+                <span>
+                <a href="{% url 'workout_detail' workout.id %}" class="btn btn-sm btn-info">Подробнее</a>
+                <a href="{% url 'edit_workout' workout.id %}" class="btn btn-sm btn-secondary">Редактировать</a>
+                <a href="{% url 'delete_workout' workout.id %}" class="btn btn-sm btn-danger">Удалить</a>
+            </span>
+            </li>
+        {% empty %}
+            <li class="list-group-item">Нет тренировок, соответствующих вашим критериям.</li>
+        {% endfor %}
+    </ul>
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?
+
+
+
+                            {% if filter.form.data %}{{ filter.form.data.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?
+
+
+
+
+
+
+                            {% if filter.form.data %}{{ filter.form.data.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?
+
+
+
+
+
+
+                            {% if filter.form.data %}{{ filter.form.data.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}"
+                       aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+{% endblock %}

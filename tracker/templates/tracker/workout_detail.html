@@ -1,0 +1,21 @@
+<!-- tracker/templates/tracker/workout_detail.html -->
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+    <h2>Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h2>
+    <p>Продолжительность: {{ workout.duration|default:"Не завершена" }}</p>
+
+    <h3>Упражнения</h3>
+    <ul>
+        {% for we in exercises %}
+            <li>
+                <strong>{{ we.exercise.name }}</strong>
+                <ul>
+                    {% for set in we.set_set.all %}
+                        <li>{{ set.repetitions }} повторений с весом {{ set.weight }} кг</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
