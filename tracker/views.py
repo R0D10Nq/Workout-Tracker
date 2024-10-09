@@ -5,12 +5,13 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.core.paginator import Paginator
+from django.db.models import Sum, Count, Max
+from django.db.models.functions import TruncMonth
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from .filters import ExerciseFilter, MuscleGroupFilter
-from .filters import WorkoutFilter
+from .filters import WorkoutFilter, ExerciseFilter, MuscleGroupFilter
 from .forms import WorkoutForm, ExerciseForm, MuscleGroupForm, WorkoutExerciseForm
 from .models import Workout, Exercise, MuscleGroup, WorkoutExercise, Set
 
@@ -144,13 +145,58 @@ def workout_detail(request, workout_id):
 
 @login_required
 def progress(request):
-    workouts = Workout.objects.filter(user=request.user).order_by('start_time')
-    labels = [workout.start_time.strftime('%Y-%m-%d %H:%M') for workout in workouts]
-    data = [workout.duration.total_seconds() / 60 if workout.duration else 0 for workout in workouts]
+    user = request.user
+
+    # 1. Общее время тренировок (в минутах)
+    total_duration = Workout.objects.filter(user=user, duration__isnull=False).aggregate(
+        total=Sum('duration')
+    )['total']
+    total_minutes = total_duration.total_seconds() / 60 if total_duration else 0
+
+    # 2. Количество тренировок в месяц
+    workouts_per_month = Workout.objects.filter(user=user).annotate(
+        month=TruncMonth('start_time')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+
+    months = [workout['month'].strftime('%Y-%m') for workout in workouts_per_month]
+    workouts_counts = [workout['count'] for workout in workouts_per_month]
+
+    # 3. Прогресс по упражнениям (увеличение веса и повторений)
+    # Получаем все упражнения пользователя
+    exercises = Exercise.objects.filter(user=user)
+
+    # Для каждого упражнения собираем максимальный вес и повторения по месяцам
+    exercise_progress = {}
+    for exercise in exercises:
+        sets = Set.objects.filter(
+            workout_exercise__exercise=exercise,
+            workout_exercise__workout__user=user
+        ).annotate(
+            month=TruncMonth('workout_exercise__workout__start_time')
+        ).values('month').annotate(
+            max_weight=Max('weight'),
+            max_reps=Max('repetitions')
+        ).order_by('month')
+
+        months_ex = [entry['month'].strftime('%Y-%m') for entry in sets]
+        max_weights = [entry['max_weight'] for entry in sets]
+        max_reps = [entry['max_reps'] for entry in sets]
+
+        exercise_progress[exercise.name] = {
+            'months': months_ex,
+            'max_weights': max_weights,
+            'max_reps': max_reps,
+        }
+
     context = {
-        'labels': labels,
-        'data': data,
+        'total_minutes': total_minutes,
+        'months': months,
+        'workouts_counts': workouts_counts,
+        'exercise_progress': exercise_progress,
     }
+
     return render(request, 'tracker/progress.html', context)
 
 

@@ -1,46 +1,44 @@
-<!-- tracker/templates/tracker/exercises.html -->
 {% extends 'tracker/base.html' %}
-{% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <h2>Упражнения</h2>
+    <h2 class="mb-4">Упражнения</h2>
 
-    <p>
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
-                aria-expanded="false" aria-controls="collapseExample">
-            Фильтр
-        </button>
-    </p>
-    <div class="collapse" id="collapseExample">
-        <div class="card card-body">
-            <form method="get" class="mb-3">
-                {{ filter.form|crispy }}
+    <div data-aos="fade-up">
+        <form method="get" class="row g-3 mb-4">
+            {{ filter.form|crispy }}
+            <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Фильтровать</button>
                 <a href="{% url 'exercises' %}" class="btn btn-secondary">Сбросить</a>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
-    <form method="post" class="mb-3">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn btn-primary">Добавить</button>
-    </form>
+    <div data-aos="fade-up">
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-success">Добавить упражнение</button>
+        </form>
+    </div>
 
-    <ul class="list-group">
-        {% for exercise in filter.qs %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    {{ exercise.name }} - {{ exercise.muscle_groups.all|join:", " }}
-                </div>
-                <span>
-                <a href="{% url 'edit_exercise' exercise.id %}" class="btn btn-sm btn-secondary">Редактировать</a>
-                <a href="{% url 'delete_exercise' exercise.id %}" class="btn btn-sm btn-danger">Удалить</a>
-            </span>
-            </li>
-        {% empty %}
-            <li class="list-group-item">Нет упражнений, соответствующих вашим критериям.</li>
-        {% endfor %}
-    </ul>
+    <div data-aos="fade-up">
+        <ul class="list-group">
+            {% for exercise in filter.qs %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5>{{ exercise.name }}</h5>
+                        <p class="mb-0"><strong>Мышечные группы:</strong> {{ exercise.muscle_groups.all|join:", " }}</p>
+                    </div>
+                    <span>
+                    <a href="{% url 'edit_exercise' exercise.id %}"
+                       class="btn btn-sm btn-warning me-2">Редактировать</a>
+                    <a href="{% url 'delete_exercise' exercise.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                </span>
+                </li>
+            {% empty %}
+                <li class="list-group-item">Нет упражнений, соответствующих вашим критериям.</li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

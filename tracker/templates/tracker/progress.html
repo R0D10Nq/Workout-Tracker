@@ -2,31 +2,119 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>Ваш прогресс</h2>
-    <canvas id="progressChart"></canvas>
+    <h2>Ваш Прогресс</h2>
+
+    <!-- Общее время тренировок -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Общее время тренировок</h5>
+            <p class="card-text">{{ total_minutes|floatformat:2 }} минут</p>
+        </div>
+    </div>
+
+    <!-- Количество тренировок в месяц -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Количество тренировок в месяц</h5>
+            <canvas id="workoutsPerMonthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Прогресс по упражнениям -->
+    {% for exercise, data in exercise_progress.items %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Прогресс по упражнению: {{ exercise }}</h5>
+                <canvas id="progressChart_{{ forloop.counter }}"></canvas>
+            </div>
+        </div>
+    {% endfor %}
+
 {% endblock %}
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var ctx = document.getElementById('progressChart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'line',
+
+        // 1. График количества тренировок в месяц
+
+        let ctx1 = document.getElementById('workoutsPerMonthChart').getContext('2d');
+        let workoutsPerMonthChart = new Chart(ctx1, {
+            type: 'bar',
             data: {
-                labels: {{ labels|safe }},
+                labels: {{ months|safe }},
                 datasets: [{
-                    label: 'Время тренировок (минуты)',
-                    data: {{ data|safe }},
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    fill: false
+                    label: 'Количество тренировок',
+                    data: {{ workouts_counts|safe }},
+                    backgroundColor: 'rgba(54,162,235,0.45)',
+                    borderColor: 'rgba(54,162,235,0.85)',
+                    borderWidth: 1
                 }]
             },
             options: {
                 scales: {
-                    x: {display: true},
-                    y: {display: true}
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Месяц'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Количество тренировок'
+                        }
+                    }
                 }
             }
         });
+
+        // 2. Графики прогресса по упражнениям
+
+        {% for exercise, data in exercise_progress.items %}
+            let ctx{{ forloop.counter }} = document.getElementById('progressChart_{{ forloop.counter }}').getContext('2d');
+            let progressChart{{ forloop.counter }} = new Chart(ctx{{ forloop.counter }}, {
+                type: 'line',
+                data: {
+                    labels: {{ data.months|safe }},
+                    datasets: [
+                        {
+                            label: 'Максимальный вес (кг)',
+                            data: {{ data.max_weights|safe }},
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Максимальные повторения',
+                            data: {{ data.max_reps|safe }},
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Месяц'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Значение'
+                            }
+                        }
+                    }
+                }
+            });
+        {% endfor %}
     </script>
 {% endblock %}

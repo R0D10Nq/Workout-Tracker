@@ -1,16 +1,16 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>Календарь тренировок за {{ month_name }} {{ year }}</h2>
+    <h2 class="mb-4" data-aos="fade-down">Календарь тренировок за {{ month_name }} {{ year }}</h2>
 
-    <div class="mb-3">
+    <div class="d-flex justify-content-between mb-4" data-aos="fade-up">
         <a href="{% url 'calendar' prev_year prev_month %}" class="btn btn-secondary">&laquo; Предыдущий месяц</a>
         <a href="{% url 'calendar_current' %}" class="btn btn-primary">Текущий месяц</a>
         <a href="{% url 'calendar' next_year next_month %}" class="btn btn-secondary">Следующий месяц &raquo;</a>
     </div>
 
     <table class="table table-bordered text-center">
-        <thead>
+        <thead class="table-light">
         <tr>
             <th>Пн</th>
             <th>Вт</th>
@@ -29,19 +29,64 @@
                         <td></td>
                     {% else %}
                         {% if day in workout_days %}
-                            <td class="workout-day">
-                                <strong>{{ day }}</strong>
+                            <td class="workout-day" data-aos="zoom-in">
+                                <a href="#workoutModal{{ day }}" class="text-decoration-none text-dark">
+                                    <strong>{{ day }}</strong> <span class="badge bg-success">✔</span>
+                                </a>
+
+                                <!-- Модальное окно для тренировки -->
                                 {% for workout in workouts %}
                                     {% if workout.start_time.day == day %}
-                                        <br>
-                                        <a href="{% url 'workout_detail' workout.id %}">Подробнее</a>
+                                        <div class="modal fade" id="workoutModal{{ day }}" tabindex="-1"
+                                             aria-labelledby="workoutModalLabel{{ day }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="workoutModalLabel{{ day }}">
+                                                            Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                aria-label="Закрыть"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p><strong>Продолжительность:</strong>
+                                                            {% if workout.duration %}{{ workout.duration }}{% else %}Не
+                                                                завершена{% endif %}</p>
+                                                        <h6>Упражнения:</h6>
+                                                        <ul>
+                                                            {% for we in workout.workoutexercise_set.all %}
+                                                                <li>
+                                                                    <strong>{{ we.exercise.name }}</strong>
+                                                                    <ul>
+                                                                        {% for set in we.set_set.all %}
+                                                                            <li>{{ set.repetitions }} повторений с
+                                                                                весом {{ set.weight }} кг
+                                                                            </li>
+                                                                        {% empty %}
+                                                                            <li>Нет подходов.</li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </li>
+                                                            {% empty %}
+                                                                <li>Нет упражнений.</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="{% url 'workout_detail' workout.id %}"
+                                                           class="btn btn-primary">Подробнее</a>
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Закрыть
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     {% endif %}
                                 {% endfor %}
                             </td>
                         {% else %}
-                            <td>{{ day }}</td>
+                            <td data-aos="fade-up">{{ day }}</td>
                         {% endif %}
-
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -53,7 +98,13 @@
 {% block extra_head %}
     <style>
         .workout-day {
-            background-color: #dff0d8;
+            background-color: #d4edda;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .workout-day:hover {
+            transform: scale(1.05);
         }
     </style>
 {% endblock %}

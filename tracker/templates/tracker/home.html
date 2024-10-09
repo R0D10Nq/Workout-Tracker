@@ -1,8 +1,14 @@
 <!-- tracker/templates/tracker/home.html -->
 {% extends 'tracker/base.html' %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
 
 {% block content %}
-    <h2 class="animate__animated animate__fadeIn">Добро пожаловать в Workout Tracker</h2>
-    <p>Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a> для
-        продолжения.</p>
+    <div class="text-center animate__animated animate__fadeIn">
+        <h1 class="display-4">Добро пожаловать в Workout Tracker</h1>
+        <p class="lead">Отслеживайте свои тренировки, прогресс и достигайте своих спортивных целей.</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'signup' %}" class="btn btn-success btn-lg">Начать сейчас</a>
+        {% endif %}
+    </div>
 {% endblock %}
