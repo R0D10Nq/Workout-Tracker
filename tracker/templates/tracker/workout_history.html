@@ -4,14 +4,24 @@
 {% block content %}
     <h2 class="mb-4">История тренировок</h2>
 
-    <div data-aos="fade-up">
-        <form method="get" class="row g-3 mb-4">
-            {{ filter.form|crispy }}
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Фильтровать</button>
-                <a href="{% url 'workout_history' %}" class="btn btn-secondary">Сбросить</a>
+    <p>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
+                aria-expanded="false" aria-controls="collapseExample">
+            Фильтр
+        </button>
+    </p>
+    <div class="collapse" id="collapseExample">
+        <div class="card card-body">
+            <div data-aos="fade-up">
+                <form method="get" class="row g-3 mb-4">
+                    {{ filter.form|crispy }}
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Фильтровать</button>
+                        <a href="{% url 'workout_history' %}" class="btn btn-secondary">Сбросить</a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 
     <div data-aos="fade-up">

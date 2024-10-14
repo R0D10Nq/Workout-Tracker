@@ -13,24 +13,29 @@ class MuscleGroup(models.Model):
 class Exercise(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    muscle_groups = models.ManyToManyField(MuscleGroup)
+    muscle_groups = models.ManyToManyField(MuscleGroup, blank=True)  # Разрешить пустые
 
     def __str__(self):
         return self.name
 
 
 class Workout(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     start_time = models.DateTimeField(auto_now_add=True)
     duration = models.DurationField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.start_time}"
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'start_time']),
+        ]
 
 
 class WorkoutExercise(models.Model):
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('workout', 'exercise')  # Предотвращение дублирования
 
     def __str__(self):
         return f"{self.exercise.name} in {self.workout}"

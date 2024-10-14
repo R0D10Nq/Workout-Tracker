@@ -30,19 +30,20 @@
                     {% else %}
                         {% if day in workout_days %}
                             <td class="workout-day" data-aos="zoom-in">
-                                <a href="#workoutModal{{ day }}" class="text-decoration-none text-dark">
+                                <button type="button" class="text-decoration-none text-dark btn btn-link p-0"
+                                        data-bs-toggle="modal" data-bs-target="#workoutModal{{ workout.id }}">
                                     <strong>{{ day }}</strong> <span class="badge bg-success">✔</span>
-                                </a>
+                                </button>
 
                                 <!-- Модальное окно для тренировки -->
                                 {% for workout in workouts %}
                                     {% if workout.start_time.day == day %}
-                                        <div class="modal fade" id="workoutModal{{ day }}" tabindex="-1"
-                                             aria-labelledby="workoutModalLabel{{ day }}" aria-hidden="true">
+                                        <div class="modal fade" id="workoutModal{{ workout.id }}" tabindex="-1"
+                                             aria-labelledby="workoutModalLabel{{ workout.id }}" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="workoutModalLabel{{ day }}">
+                                                        <h5 class="modal-title" id="workoutModalLabel{{ workout.id }}">
                                                             Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Закрыть"></button>
@@ -50,7 +51,8 @@
                                                     <div class="modal-body">
                                                         <p><strong>Продолжительность:</strong>
                                                             {% if workout.duration %}{{ workout.duration }}{% else %}Не
-                                                                завершена{% endif %}</p>
+                                                                завершена{% endif %}
+                                                        </p>
                                                         <h6>Упражнения:</h6>
                                                         <ul>
                                                             {% for we in workout.workoutexercise_set.all %}

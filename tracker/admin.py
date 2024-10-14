@@ -6,6 +6,12 @@ from .models import Workout, Exercise, Set, MuscleGroup, WorkoutExercise
 class MuscleGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'user')
     search_fields = ('name', 'user__username')
+    actions = ['delete_selected']
+
+    def delete_selected(self, request, queryset):
+        queryset.delete()
+
+    delete_selected.short_description = 'Удалить выбранные мышечные группы'
 
 
 @admin.register(Exercise)
@@ -20,6 +26,7 @@ class WorkoutAdmin(admin.ModelAdmin):
     list_display = ('user', 'start_time', 'duration')
     search_fields = ('user__username',)
     list_filter = ('start_time', 'duration')
+    ordering = ('-start_time',)  # Сортировка по дате тренировки (новые сверху)
 
 
 @admin.register(WorkoutExercise)

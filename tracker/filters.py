@@ -32,7 +32,7 @@ class WorkoutFilter(django_filters.FilterSet):
 class ExerciseFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Название упражнения')
     muscle_groups = django_filters.ModelMultipleChoiceFilter(
-        queryset=MuscleGroup.objects.none(),
+        queryset=MuscleGroup.objects.none(),  # Изначально пустой
         widget=forms.CheckboxSelectMultiple,
         label='Мышечные группы'
     )
@@ -42,9 +42,12 @@ class ExerciseFilter(django_filters.FilterSet):
         fields = ['name', 'muscle_groups']
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user')
+        user = kwargs.pop('user', None)
         super(ExerciseFilter, self).__init__(*args, **kwargs)
-        self.filters['muscle_groups'].queryset = MuscleGroup.objects.filter(user=user)
+        if user:
+            self.filters['muscle_groups'].queryset = MuscleGroup.objects.filter(user=user)
+        else:
+            self.filters['muscle_groups'].queryset = MuscleGroup.objects.none()
 
 
 class MuscleGroupFilter(django_filters.FilterSet):

@@ -1,6 +1,7 @@
 import calendar
 from datetime import datetime
 
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -138,8 +139,8 @@ def workout_list(request):
 
 @login_required
 def workout_detail(request, workout_id):
-    workout = get_object_or_404(Workout, id=workout_id, user=request.user)
-    exercises = WorkoutExercise.objects.filter(workout=workout)
+    workout = get_object_or_404(Workout.objects.select_related('user'), id=workout_id, user=request.user)
+    exercises = WorkoutExercise.objects.filter(workout=workout).select_related('exercise').prefetch_related('set_set')
     return render(request, 'tracker/workout_detail.html', {'workout': workout, 'exercises': exercises})
 
 
@@ -201,19 +202,6 @@ def progress(request):
 
 
 @login_required
-def edit_workout(request, workout_id):
-    workout = get_object_or_404(Workout, id=workout_id, user=request.user)
-    if request.method == 'POST':
-        form = WorkoutForm(request.POST, instance=workout)
-        if form.is_valid():
-            form.save()
-            return redirect('workout_history')
-    else:
-        form = WorkoutForm(instance=workout)
-    return render(request, 'tracker/edit_workout.html', {'form': form, 'workout': workout})
-
-
-@login_required
 def calendar_view(request, year=None, month=None):
     user = request.user
     if year is None:
@@ -258,6 +246,19 @@ def calendar_view(request, year=None, month=None):
         'workouts': workouts,
     }
     return render(request, 'tracker/calendar.html', context)
+
+
+@login_required
+def edit_workout(request, workout_id):
+    workout = get_object_or_404(Workout, id=workout_id, user=request.user)
+    if request.method == 'POST':
+        form = WorkoutForm(request.POST, instance=workout)
+        if form.is_valid():
+            form.save()
+            return redirect('workout_history')
+    else:
+        form = WorkoutForm(instance=workout)
+    return render(request, 'tracker/edit_workout.html', {'form': form, 'workout': workout})
 
 
 MONTH_NAMES = {
@@ -320,6 +321,7 @@ def delete_exercise(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id, user=request.user)
     if request.method == 'POST':
         exercise.delete()
+        messages.success(request, f'Упражнение "{exercise.name}" было успешно удалено.')
         return redirect('exercises')
     return render(request, 'tracker/delete_exercise.html', {'exercise': exercise})
 
@@ -333,10 +335,3 @@ def delete_workout(request, workout_id):
         workout.delete()
         return redirect('workout_history')
     return render(request, 'tracker/delete_workout.html', {'workout': workout})
-
-
-@login_required
-def workout_history(request):
-    workout_filter = WorkoutFilter(request.GET,
-                                   queryset=Workout.objects.filter(user=request.user).order_by('-start_time'))
-    return render(request, 'tracker/workout_history.html', {'filter': workout_filter})

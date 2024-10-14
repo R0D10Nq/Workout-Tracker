@@ -2,27 +2,50 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+
+    <style>
+
+        #div_id_muscle_groups > div {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            align-content: center;
+            flex-wrap: wrap;
+        }
+
+        #div_id_muscle_groups > div > div > label {
+            width: 220px;
+        }
+    </style>
+
     <h2 class="mb-4">Упражнения</h2>
 
-    <div data-aos="fade-up">
-        <form method="get" class="row g-3 mb-4">
-            {{ filter.form|crispy }}
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Фильтровать</button>
-                <a href="{% url 'exercises' %}" class="btn btn-secondary">Сбросить</a>
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    Фильтр
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample" style="">
+                <div class="accordion-body">
+                    <div>
+                        <form method="get" class="row g-3 mb-4">
+                            {{ filter.form|crispy }}
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">Фильтровать</button>
+                                <a href="{% url 'exercises' %}" class="btn btn-secondary">Сбросить</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </form>
+        </div>
+    </div>
     </div>
 
-    <div data-aos="fade-up">
-        <form method="post" class="mb-4">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" class="btn btn-success">Добавить упражнение</button>
-        </form>
-    </div>
-
-    <div data-aos="fade-up">
+    <div>
         <ul class="list-group">
             {% for exercise in filter.qs %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">

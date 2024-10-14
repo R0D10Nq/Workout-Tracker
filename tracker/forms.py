@@ -49,3 +49,13 @@ class SetForm(forms.ModelForm):
     class Meta:
         model = Set
         fields = ['repetitions', 'weight']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        weight = cleaned_data.get('weight')
+        repetitions = cleaned_data.get('repetitions')
+
+        if weight is not None and weight <= 0:
+            self.add_error('weight', 'Вес должен быть положительным числом.')
+        if repetitions is not None and repetitions <= 0:
+            self.add_error('repetitions', 'Количество повторений должно быть положительным числом.')

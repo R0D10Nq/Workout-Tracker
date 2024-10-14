@@ -34,18 +34,27 @@
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{ months|json_script:"months-data" }}
+    {{ workouts_counts|json_script:"workouts-counts-data" }}
+    {% for exercise, data in exercise_progress.items %}
+        {{ data.months|json_script:"months-ex-{{ forloop.counter }}" }}
+        {{ data.max_weights|json_script:"max-weights-ex-{{ forloop.counter }}" }}
+        {{ data.max_reps|json_script:"max-reps-ex-{{ forloop.counter }}" }}
+    {% endfor %}
     <script>
+        // Получение данных из JSON
+        const months = JSON.parse(document.getElementById('months-data').textContent);
+        const workoutsCounts = JSON.parse(document.getElementById('workouts-counts-data').textContent);
 
-        // 1. График количества тренировок в месяц
-
+        // График количества тренировок в месяц
         let ctx1 = document.getElementById('workoutsPerMonthChart').getContext('2d');
         let workoutsPerMonthChart = new Chart(ctx1, {
             type: 'bar',
             data: {
-                labels: {{ months|safe }},
+                labels: months,
                 datasets: [{
                     label: 'Количество тренировок',
-                    data: {{ workouts_counts|safe }},
+                    data: workoutsCounts,
                     backgroundColor: 'rgba(54,162,235,0.45)',
                     borderColor: 'rgba(54,162,235,0.85)',
                     borderWidth: 1
@@ -70,18 +79,21 @@
             }
         });
 
-        // 2. Графики прогресса по упражнениям
-
+        // Графики прогресса по упражнениям
         {% for exercise, data in exercise_progress.items %}
+            const monthsEx{{ forloop.counter }} = JSON.parse(document.getElementById('months-ex-{{ forloop.counter }}').textContent);
+            const maxWeights{{ forloop.counter }} = JSON.parse(document.getElementById('max-weights-ex-{{ forloop.counter }}').textContent);
+            const maxReps{{ forloop.counter }} = JSON.parse(document.getElementById('max-reps-ex-{{ forloop.counter }}').textContent);
+
             let ctx{{ forloop.counter }} = document.getElementById('progressChart_{{ forloop.counter }}').getContext('2d');
             let progressChart{{ forloop.counter }} = new Chart(ctx{{ forloop.counter }}, {
                 type: 'line',
                 data: {
-                    labels: {{ data.months|safe }},
+                    labels: monthsEx{{ forloop.counter }},
                     datasets: [
                         {
                             label: 'Максимальный вес (кг)',
-                            data: {{ data.max_weights|safe }},
+                            data: maxWeights{{ forloop.counter }},
                             borderColor: 'rgba(255, 99, 132, 1)',
                             backgroundColor: 'rgba(255, 99, 132, 0.2)',
                             fill: false,
@@ -89,7 +101,7 @@
                         },
                         {
                             label: 'Максимальные повторения',
-                            data: {{ data.max_reps|safe }},
+                            data: maxReps{{ forloop.counter }},
                             borderColor: 'rgba(75, 192, 192, 1)',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             fill: false,
