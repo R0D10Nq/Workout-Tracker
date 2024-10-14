@@ -1,4 +1,3 @@
-<!-- tracker/templates/tracker/progress.html -->
 {% extends 'tracker/base.html' %}
 
 {% block content %}
@@ -36,13 +35,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {{ months|json_script:"months-data" }}
     {{ workouts_counts|json_script:"workouts-counts-data" }}
+
     {% for exercise, data in exercise_progress.items %}
-        {{ data.months|json_script:"months-ex-{{ forloop.counter }}" }}
-        {{ data.max_weights|json_script:"max-weights-ex-{{ forloop.counter }}" }}
-        {{ data.max_reps|json_script:"max-reps-ex-{{ forloop.counter }}" }}
+        {% with months_id="months-ex-"|add:forloop.counter %}
+            {{ data.months|json_script:months_id }}
+        {% endwith %}
+        {% with max_weights_id="max-weights-ex-"|add:forloop.counter %}
+            {{ data.max_weights|json_script:max_weights_id }}
+        {% endwith %}
+        {% with max_reps_id="max-reps-ex-"|add:forloop.counter %}
+            {{ data.max_reps|json_script:max_reps_id }}
+        {% endwith %}
     {% endfor %}
+
     <script>
         const exerciseCount = {{ exercise_count }};
     </script>
+
+    {% load static %}
+
     <script src="{% static 'tracker/js/progress.js' %}"></script>
 {% endblock %}

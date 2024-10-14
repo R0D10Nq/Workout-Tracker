@@ -1,5 +1,3 @@
-// tracker/static/tracker/js/progress.js
-
 // Получение данных из JSON
 const months = JSON.parse(document.getElementById('months-data').textContent);
 const workoutsCounts = JSON.parse(document.getElementById('workouts-counts-data').textContent);
