@@ -42,26 +42,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <script>
-        $(document).ready(function () {
-            $('.add-set-form').on('submit', function (e) {
-                e.preventDefault();
-                let form = $(this);
-                let workoutExerciseId = form.data('workout-exercise-id');
-                let data = form.serializeArray();
-                data.push({name: 'workout_exercise_id', value: workoutExerciseId});
-                $.ajax({
-                    url: "{% url 'add_set_ajax' %}",
-                    type: 'POST',
-                    data: data,
-                    success: function (response) {
-                        if (response.set_info) {
-                            $('#sets-list-' + workoutExerciseId).append('<li>' + response.set_info + '</li>');
-                            form[0].reset();
-                        }
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="{% static 'tracker/js/workout_session.js' %}"></script>
 {% endblock %}

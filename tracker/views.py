@@ -196,6 +196,7 @@ def progress(request):
         'months': months,
         'workouts_counts': workouts_counts,
         'exercise_progress': exercise_progress,
+        'exercise_count': len(exercise_progress),
     }
 
     return render(request, 'tracker/progress.html', context)

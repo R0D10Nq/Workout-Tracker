@@ -1,0 +1,40 @@
+.button {
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+body {
+    padding-top: 56px;
+    margin: 10px;
+}
+
+.nav-link.active {
+    font-weight: bold;
+    color: #0dfd35 !important;
+}
+
+.workout-day {
+    background-color: #d4edda;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.workout-day:hover {
+    background-color: #c3e6cb;
+    transform: scale(1.05);
+}
+
+#div_id_muscle_groups > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+#div_id_muscle_groups > div > div > label {
+    width: 220px;
+}
