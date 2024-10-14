@@ -1,4 +1,5 @@
 import calendar
+import json
 from datetime import datetime
 
 from django.contrib import messages
@@ -9,12 +10,14 @@ from django.core.paginator import Paginator
 from django.db.models import Sum, Count, Max
 from django.db.models.functions import TruncMonth
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render
 from django.utils import timezone
 
 from .filters import WorkoutFilter, ExerciseFilter, MuscleGroupFilter
 from .forms import WorkoutForm, ExerciseForm, MuscleGroupForm, WorkoutExerciseForm
-from .models import Workout, Exercise, MuscleGroup, WorkoutExercise, Set
+from .models import Exercise, MuscleGroup, WorkoutExercise, Set
+from .models import Workout
 
 
 def home(request):
@@ -72,6 +75,10 @@ def exercises(request):
 
 @login_required
 def start_workout(request):
+    active_workout = Workout.objects.filter(user=request.user, duration__isnull=True).first()
+    if active_workout:
+        messages.warning(request, 'Чтобы начать новую тренировку, завершите текущую.')
+        return redirect('workout_session', workout_id=active_workout.id)
     workout = Workout.objects.create(user=request.user)
     return redirect('workout_session', workout_id=workout.id)
 
@@ -108,16 +115,20 @@ def add_workout_exercise(request, workout_id):
 @login_required
 def add_set_ajax(request):
     if request.method == 'POST':
-        workout_exercise_id = request.POST.get('workout_exercise_id')
-        repetitions = request.POST.get('repetitions')
-        weight = request.POST.get('weight')
-        workout_exercise = get_object_or_404(WorkoutExercise, id=workout_exercise_id, workout__user=request.user)
-        set_instance = Set.objects.create(
-            workout_exercise=workout_exercise,
-            repetitions=repetitions,
-            weight=weight
-        )
-        return JsonResponse({'set_info': f"{set_instance.repetitions} reps at {set_instance.weight} kg"})
+        try:
+            data = json.loads(request.body)
+            workout_exercise_id = data.get('workout_exercise_id')
+            repetitions = data.get('repetitions')
+            weight = data.get('weight')
+            workout_exercise = get_object_or_404(WorkoutExercise, id=workout_exercise_id, workout__user=request.user)
+            set_instance = Set.objects.create(
+                workout_exercise=workout_exercise,
+                repetitions=repetitions,
+                weight=weight
+            )
+            return JsonResponse({'set_info': f"{set_instance.repetitions} повторений с весом {set_instance.weight} кг"})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
@@ -125,7 +136,8 @@ def add_set_ajax(request):
 def workout_history(request):
     workout_filter = WorkoutFilter(request.GET,
                                    queryset=Workout.objects.filter(user=request.user).order_by('-start_time'))
-    paginator = Paginator(workout_filter.qs, 10)  # 10 тренировок на страницу
+    workouts = workout_filter.qs.prefetch_related('workoutexercise_set__exercise')
+    paginator = Paginator(workouts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'tracker/workout_history.html', {'filter': workout_filter, 'page_obj': page_obj})
@@ -148,27 +160,19 @@ def workout_detail(request, workout_id):
 def progress(request):
     user = request.user
 
-    # 1. Общее время тренировок (в минутах)
-    total_duration = Workout.objects.filter(user=user, duration__isnull=False).aggregate(
-        total=Sum('duration')
-    )['total']
+    # Общее время тренировок
+    total_duration = Workout.objects.filter(user=user, duration__isnull=False).aggregate(total=Sum('duration'))['total']
     total_minutes = total_duration.total_seconds() / 60 if total_duration else 0
 
-    # 2. Количество тренировок в месяц
-    workouts_per_month = Workout.objects.filter(user=user).annotate(
-        month=TruncMonth('start_time')
-    ).values('month').annotate(
-        count=Count('id')
-    ).order_by('month')
+    # Количество тренировок в месяц
+    workouts_per_month = Workout.objects.filter(user=user).annotate(month=TruncMonth('start_time')).values(
+        'month').annotate(count=Count('id')).order_by('month')
 
     months = [workout['month'].strftime('%Y-%m') for workout in workouts_per_month]
     workouts_counts = [workout['count'] for workout in workouts_per_month]
 
-    # 3. Прогресс по упражнениям (увеличение веса и повторений)
-    # Получаем все упражнения пользователя
+    # Прогресс по упражнениям
     exercises = Exercise.objects.filter(user=user)
-
-    # Для каждого упражнения собираем максимальный вес и повторения по месяцам
     exercise_progress = {}
     for exercise in exercises:
         sets = Set.objects.filter(
@@ -181,15 +185,16 @@ def progress(request):
             max_reps=Max('repetitions')
         ).order_by('month')
 
-        months_ex = [entry['month'].strftime('%Y-%m') for entry in sets]
-        max_weights = [entry['max_weight'] for entry in sets]
-        max_reps = [entry['max_reps'] for entry in sets]
+        if sets:
+            months_ex = [entry['month'].strftime('%Y-%m') for entry in sets]
+            max_weights = [entry['max_weight'] for entry in sets]
+            max_reps = [entry['max_reps'] for entry in sets]
 
-        exercise_progress[exercise.name] = {
-            'months': months_ex,
-            'max_weights': max_weights,
-            'max_reps': max_reps,
-        }
+            exercise_progress[exercise.name] = {
+                'months': months_ex,
+                'max_weights': max_weights,
+                'max_reps': max_reps,
+            }
 
     context = {
         'total_minutes': total_minutes,
@@ -213,22 +218,21 @@ def calendar_view(request, year=None, month=None):
     year = int(year)
     month = int(month)
 
-    # Получаем все тренировки пользователя в указанном месяце
     workouts = Workout.objects.filter(
         user=user,
         start_time__year=year,
         start_time__month=month
-    )
+    ).prefetch_related('workoutexercise_set__exercise')
 
-    # Получаем список дней, когда были тренировки
-    workout_days = workouts.values_list('start_time__day', flat=True)
+    workouts_by_day = {}
+    for workout in workouts:
+        day = workout.start_time.day
+        workouts_by_day.setdefault(day, []).append(workout)
 
-    # Создаем объект календаря
-    cal = calendar.Calendar(firstweekday=0)  # Неделя начинается с понедельника
-
+    cal = calendar.Calendar(firstweekday=0)
     month_days = cal.monthdayscalendar(year, month)
 
-    # Рассчитываем предыдущий и следующий месяцы
+    # Предыдущий и следующий месяцы
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
     next_month = month + 1 if month < 12 else 1
@@ -238,13 +242,12 @@ def calendar_view(request, year=None, month=None):
         'year': year,
         'month': month,
         'month_days': month_days,
-        'workout_days': workout_days,
+        'workouts_by_day': workouts_by_day,
         'prev_year': prev_year,
         'prev_month': prev_month,
         'next_year': next_year,
         'next_month': next_month,
         'month_name': MONTH_NAMES.get(month, ''),
-        'workouts': workouts,
     }
     return render(request, 'tracker/calendar.html', context)
 
@@ -256,6 +259,7 @@ def edit_workout(request, workout_id):
         form = WorkoutForm(request.POST, instance=workout)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Тренировка успешно обновлена.')
             return redirect('workout_history')
     else:
         form = WorkoutForm(instance=workout)

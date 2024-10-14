@@ -1,5 +1,3 @@
-// tracker/static/tracker/js/app.js
-
 // Инициализация AOS (Animate On Scroll)
 AOS.init({
     duration: 800, // Продолжительность анимации

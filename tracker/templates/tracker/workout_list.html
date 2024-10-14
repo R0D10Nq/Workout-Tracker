@@ -1,15 +1,22 @@
-<!-- tracker/templates/tracker/workout_list.html -->
 {% extends 'tracker/base.html' %}
 
 {% block content %}
     <h2>Список тренировок</h2>
     <ul class="list-group">
         {% for workout in workouts %}
-            <li class="list-group-item">
-                <a href="{% url 'workout_detail' workout.id %}">{{ workout.start_time|date:"d.m.Y H:i" }}</a>
-                <a href="{% url 'edit_workout' workout.id %}"
-                   class="btn btn-sm btn-secondary float-right">Редактировать</a>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'workout_detail' workout.id %}">
+                        {{ workout.title|default:"Тренировка" }} от {{ workout.start_time|date:"d.m.Y H:i" }}
+                    </a>
+                </div>
+                <div>
+                    <a href="{% url 'edit_workout' workout.id %}" class="btn btn-sm btn-warning me-2">Редактировать</a>
+                    <a href="{% url 'delete_workout' workout.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                </div>
             </li>
+        {% empty %}
+            <li class="list-group-item">У вас пока нет тренировок.</li>
         {% endfor %}
     </ul>
 {% endblock %}

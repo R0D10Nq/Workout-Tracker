@@ -1,4 +1,5 @@
 from django import forms
+from datetime import timedelta
 from .models import Exercise, MuscleGroup, WorkoutExercise, Workout, Set
 
 
@@ -28,10 +29,28 @@ class ExerciseForm(forms.ModelForm):
 class WorkoutForm(forms.ModelForm):
     class Meta:
         model = Workout
-        fields = ['duration']
+        fields = ['title', 'duration']
         widgets = {
-            'duration': forms.HiddenInput(),  # Если поле не должно быть видно
+            'duration': forms.TextInput(attrs={'placeholder': 'ЧЧ:ММ:СС'}),
         }
+
+    def clean_duration(self):
+        duration_str = self.cleaned_data.get('duration')
+        if not duration_str:
+            return None
+        try:
+            parts = duration_str.split(':')
+            if len(parts) == 2:
+                minutes, seconds = map(int, parts)
+                duration = timedelta(minutes=minutes, seconds=seconds)
+            elif len(parts) == 3:
+                hours, minutes, seconds = map(int, parts)
+                duration = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+            else:
+                raise ValueError
+            return duration
+        except ValueError:
+            raise forms.ValidationError('Введите продолжительность в формате ЧЧ:ММ:СС или ММ:СС')
 
 
 class WorkoutExerciseForm(forms.ModelForm):

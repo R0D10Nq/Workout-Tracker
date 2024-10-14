@@ -1,5 +1,7 @@
 {% extends 'tracker/base.html' %}
 
+{% load static %}
+
 {% block content %}
     <h2>Ваш Прогресс</h2>
 
@@ -37,13 +39,13 @@
     {{ workouts_counts|json_script:"workouts-counts-data" }}
 
     {% for exercise, data in exercise_progress.items %}
-        {% with months_id="months-ex-"|add:forloop.counter %}
+        {% with months_id="months-ex-"|add:forloop.counter0 %}
             {{ data.months|json_script:months_id }}
         {% endwith %}
-        {% with max_weights_id="max-weights-ex-"|add:forloop.counter %}
+        {% with max_weights_id="max-weights-ex-"|add:forloop.counter0 %}
             {{ data.max_weights|json_script:max_weights_id }}
         {% endwith %}
-        {% with max_reps_id="max-reps-ex-"|add:forloop.counter %}
+        {% with max_reps_id="max-reps-ex-"|add:forloop.counter0 %}
             {{ data.max_reps|json_script:max_reps_id }}
         {% endwith %}
     {% endfor %}
@@ -51,8 +53,6 @@
     <script>
         const exerciseCount = {{ exercise_count }};
     </script>
-
-    {% load static %}
 
     <script src="{% static 'tracker/js/progress.js' %}"></script>
 {% endblock %}

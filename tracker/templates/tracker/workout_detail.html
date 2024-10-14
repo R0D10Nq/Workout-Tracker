@@ -1,8 +1,12 @@
-<!-- tracker/templates/tracker/workout_detail.html -->
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h2>
+    <h2>
+        <a data-bs-toggle="collapse" href="#workoutDetails{{ workout.id }}" role="button" aria-expanded="false"
+           aria-controls="workoutDetails{{ workout.id }}">
+            {{ workout.title|default:"Тренировка" }} от {{ workout.start_time|date:"d.m.Y H:i" }}
+        </a>
+    </h2>
     <p>Продолжительность: {{ workout.duration|default:"Не завершена" }}</p>
 
     <h3>Упражнения</h3>

@@ -5,7 +5,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ii!48=ew$)+j%!#sekek+l%32ww%w9a-09lv(zq+%7o+bv)sib'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-ii!48=ew$)+j%!#sekek+l%32ww%w9a-09lv(zq+%7o+bv)sib')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
@@ -23,9 +23,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'crispy_forms',
     'crispy_bootstrap5',
     'django_filters',
-    'crispy_forms',
     'tracker',
 ]
 

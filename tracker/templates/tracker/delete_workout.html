@@ -1,7 +1,9 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>Удалить тренировку от {{ workout.start_time|date:"d.m.Y H:i" }}?</h2>
+    <h2>Удалить <a data-bs-toggle="collapse" href="#workoutDetails{{ workout.id }}" role="button" aria-expanded="false" aria-controls="workoutDetails{{ workout.id }}">
+        {{ workout.title|default:"тренировку" }} от {{ workout.start_time|date:"d.m.Y H:i" }}
+    </a>?</h2>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Удалить</button>

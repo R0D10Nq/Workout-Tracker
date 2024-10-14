@@ -1,8 +1,14 @@
-<!-- tracker/templates/tracker/workout_session.html -->
 {% extends 'tracker/base.html' %}
 
+{% load static %}
+
 {% block content %}
-    <h2>Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h2>
+    <h2>
+        <a data-bs-toggle="collapse" href="#workoutDetails{{ workout.id }}" role="button" aria-expanded="false"
+           aria-controls="workoutDetails{{ workout.id }}">
+            {{ workout.title|default:"Тренировка" }} от {{ workout.start_time|date:"d.m.Y H:i" }}
+        </a>
+    </h2>
 
     <!-- Кнопка для завершения тренировки -->
     <form method="post">
@@ -40,8 +46,6 @@
     </ul>
 
 {% endblock %}
-
-{% load static %}
 
 {% block extra_scripts %}
     <script src="{% static 'tracker/js/workout_session.js' %}"></script>

@@ -1,4 +1,5 @@
 {% extends 'tracker/base.html' %}
+{% load dictionary_tags %}
 
 {% block content %}
     <h2 class="mb-4" data-aos="fade-down">Календарь тренировок за {{ month_name }} {{ year }}</h2>
@@ -28,64 +29,49 @@
                     {% if day == 0 %}
                         <td></td>
                     {% else %}
-                        {% if day in workout_days %}
-                            <td class="workout-day" data-aos="zoom-in">
-                                <button type="button" class="text-decoration-none text-dark btn btn-link p-0"
-                                        data-bs-toggle="modal" data-bs-target="#workoutModal{{ workout.id }}">
-                                    <strong>{{ day }}</strong> <span class="badge bg-success">✔</span>
-                                </button>
+                        {% if day in workouts_by_day %}
+                            {% with workouts_for_day=workouts_by_day|get_item:day %}
+                                <td class="workout-day" data-aos="zoom-in">
+                                    <button type="button" class="text-decoration-none text-dark btn btn-link p-0"
+                                            data-bs-toggle="modal" data-bs-target="#dayModal{{ day }}">
+                                        <strong>{{ day }}</strong> <span
+                                            class="badge bg-success">{{ workouts_for_day|length }}</span>
+                                    </button>
 
-                                <!-- Модальное окно для тренировки -->
-                                {% for workout in workouts %}
-                                    {% if workout.start_time.day == day %}
-                                        <div class="modal fade" id="workoutModal{{ workout.id }}" tabindex="-1"
-                                             aria-labelledby="workoutModalLabel{{ workout.id }}" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="workoutModalLabel{{ workout.id }}">
-                                                            Тренировка от {{ workout.start_time|date:"d.m.Y H:i" }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Закрыть"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p><strong>Продолжительность:</strong>
-                                                            {% if workout.duration %}{{ workout.duration }}{% else %}Не
-                                                                завершена{% endif %}
+                                    <!-- Модальное окно для дня -->
+                                    <div class="modal fade" id="dayModal{{ day }}" tabindex="-1"
+                                         aria-labelledby="dayModalLabel{{ day }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-scrollable">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Тренировки
+                                                        за {{ day }} {{ month_name }} {{ year }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Закрыть"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    {% for workout in workouts_for_day %}
+                                                        <p><strong>{{ workout.title|default:"Тренировка" }}
+                                                            от {{ workout.start_time|time:"H:i" }}</strong></p>
+                                                        <p>
+                                                            <strong>Продолжительность:</strong> {{ workout.duration|default:"Не завершена" }}
                                                         </p>
-                                                        <h6>Упражнения:</h6>
-                                                        <ul>
+                                                        <p><strong>Упражнения:</strong>
                                                             {% for we in workout.workoutexercise_set.all %}
-                                                                <li>
-                                                                    <strong>{{ we.exercise.name }}</strong>
-                                                                    <ul>
-                                                                        {% for set in we.set_set.all %}
-                                                                            <li>{{ set.repetitions }} повторений с
-                                                                                весом {{ set.weight }} кг
-                                                                            </li>
-                                                                        {% empty %}
-                                                                            <li>Нет подходов.</li>
-                                                                        {% endfor %}
-                                                                    </ul>
-                                                                </li>
+                                                                {{ we.exercise.name }}{% if not forloop.last %},
+                                                                {% endif %}
                                                             {% empty %}
-                                                                <li>Нет упражнений.</li>
+                                                                Нет упражнений.
                                                             {% endfor %}
-                                                        </ul>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <a href="{% url 'workout_detail' workout.id %}"
-                                                           class="btn btn-primary">Подробнее</a>
-                                                        <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Закрыть
-                                                        </button>
-                                                    </div>
+                                                        </p>
+                                                        <hr>
+                                                    {% endfor %}
                                                 </div>
                                             </div>
                                         </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
+                                    </div>
+                                </td>
+                            {% endwith %}
                         {% else %}
                             <td data-aos="fade-up">{{ day }}</td>
                         {% endif %}

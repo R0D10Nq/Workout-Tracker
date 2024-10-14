@@ -15,11 +15,11 @@ urlpatterns = [
     path('add_workout_exercise/<int:workout_id>/', views.add_workout_exercise, name='add_workout_exercise'),
     path('add_set_ajax/', views.add_set_ajax, name='add_set_ajax'),
     path('workout_history/', views.workout_history, name='workout_history'),
-    path('workout_list/', views.workout_list, name='workout_list'),
     path('workout_detail/<int:workout_id>/', views.workout_detail, name='workout_detail'),
     path('progress/', views.progress, name='progress'),
     path('edit_workout/<int:workout_id>/', views.edit_workout, name='edit_workout'),
     path('delete_workout/<int:workout_id>/', views.delete_workout, name='delete_workout'),
     path('calendar/', views.calendar_view, name='calendar_current'),
     path('calendar/<int:year>/<int:month>/', views.calendar_view, name='calendar'),
+    path('workout_list/', views.workout_list, name='workout_list'),
 ]

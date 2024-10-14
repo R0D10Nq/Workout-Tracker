@@ -5,12 +5,12 @@
     <h2 class="mb-4">История тренировок</h2>
 
     <p>
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
-                aria-expanded="false" aria-controls="collapseExample">
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+                aria-expanded="false" aria-controls="filterCollapse">
             Фильтр
         </button>
     </p>
-    <div class="collapse" id="collapseExample">
+    <div class="collapse" id="filterCollapse">
         <div class="card card-body">
             <div data-aos="fade-up">
                 <form method="get" class="row g-3 mb-4">
@@ -26,23 +26,23 @@
 
     <div data-aos="fade-up">
         <ul class="list-group">
-            {% for workout in filter.qs %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5>{{ workout.start_time|date:"d.m.Y H:i" }}</h5>
-                        <p class="mb-0">
-                            {% if workout.duration %}
-                                <strong>Продолжительность:</strong> {{ workout.duration }}
-                            {% else %}
-                                <strong>Продолжительность:</strong> Не завершена
-                            {% endif %}
-                        </p>
+            {% for workout in page_obj %}
+                <li class="list-group-item">
+                    <h5>{{ workout.title|default:"Тренировка" }} от {{ workout.start_time|date:"d.m.Y H:i" }}</h5>
+                    <p><strong>Продолжительность:</strong> {{ workout.duration|default:"Не завершена" }}</p>
+                    <p><strong>Упражнения:</strong>
+                        {% for we in workout.workoutexercise_set.all %}
+                            {{ we.exercise.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Нет упражнений.
+                        {% endfor %}
+                    </p>
+                    <div class="mt-2">
+                        <a href="{% url 'workout_detail' workout.id %}" class="btn btn-sm btn-info me-2">Подробнее</a>
+                        <a href="{% url 'edit_workout' workout.id %}"
+                           class="btn btn-sm btn-warning me-2">Редактировать</a>
+                        <a href="{% url 'delete_workout' workout.id %}" class="btn btn-sm btn-danger">Удалить</a>
                     </div>
-                    <span>
-                    <a href="{% url 'workout_detail' workout.id %}" class="btn btn-sm btn-info me-2">Подробнее</a>
-                    <a href="{% url 'edit_workout' workout.id %}" class="btn btn-sm btn-warning me-2">Редактировать</a>
-                    <a href="{% url 'delete_workout' workout.id %}" class="btn btn-sm btn-danger">Удалить</a>
-                </span>
                 </li>
             {% empty %}
                 <li class="list-group-item">Нет тренировок, соответствующих вашим критериям.</li>
@@ -63,9 +63,9 @@
                 </li>
             {% else %}
                 <li class="page-item disabled">
-        <span class="page-link" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </span>
+                    <span class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
                 </li>
             {% endif %}
 
@@ -87,9 +87,9 @@
                 </li>
             {% else %}
                 <li class="page-item disabled">
-        <span class="page-link" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </span>
+                    <span class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
                 </li>
             {% endif %}
         </ul>
