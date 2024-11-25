@@ -1,4 +1,11 @@
+/* Импорт всех стилей */
+@import 'vars.css';
+@import 'base.css';
+@import 'components.css';
+@import 'pages.css';
+
 :root {
+    /* Светлая тема */
     --primary-color: #4CAF50;
     --primary-dark: #388E3C;
     --primary-light: #C8E6C9;
@@ -10,21 +17,89 @@
     --success-color: #28a745;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
+    --card-bg: white;
+    --border-color: rgba(0,0,0,.1);
+}
+
+[data-theme="dark"] {
+    /* Темная тема */
+    --primary-color: #66BB6A;
+    --primary-dark: #43A047;
+    --primary-light: #1B5E20;
+    --accent-color: #FF7043;
+    --text-primary: #E0E0E0;
+    --text-secondary: #BDBDBD;
+    --background-light: #1E1E1E;
+    --background-dark: #121212;
+    --card-bg: #2D2D2D;
+    --border-color: rgba(255,255,255,.1);
 }
 
 /* Общие стили */
 body {
     padding-top: 70px;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--text-primary);
     background-color: var(--background-light);
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Переключатель темы */
+.theme-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    margin: 0 15px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--background-dark);
+    transition: .4s;
+    border-radius: 30px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "🌞";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 3px;
+    transition: .4s;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(28px);
+    content: "🌙";
 }
 
 /* Навигация */
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
     background: var(--background-dark) !important;
+    transition: background-color 0.3s ease;
 }
 
 .navbar-brand {
@@ -60,22 +135,18 @@ body {
     color: var(--primary-color) !important;
 }
 
-/* Карточки и контейнеры */
+/* Карточки */
 .card {
     border: none;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    background-color: var(--card-bg);
 }
 
 .card-header {
-    background-color: white;
-    border-bottom: 1px solid rgba(0,0,0,.1);
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
     padding: 1rem 1.25rem;
     border-radius: 12px 12px 0 0 !important;
 }
@@ -112,19 +183,24 @@ body {
 /* Формы */
 .form-control {
     border-radius: 8px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--border-color);
     padding: 0.75rem 1rem;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
 }
 
 .form-control:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    background-color: var(--card-bg);
+    color: var(--text-primary);
 }
 
 /* Календарь */
 .table {
-    background: white;
+    background: var(--card-bg);
+    color: var(--text-primary);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,.1);
@@ -132,7 +208,7 @@ body {
 
 .table th {
     background-color: var(--background-light);
-    border: none;
+    border-color: var(--border-color);
     padding: 1rem;
     font-weight: 600;
 }
@@ -160,17 +236,20 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,.15);
     padding: 0.5rem;
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
 }
 
 .dropdown-item {
     border-radius: 8px;
     padding: 0.75rem 1rem;
     transition: all 0.2s ease;
+    color: var(--text-primary);
 }
 
 .dropdown-item:hover {
     background-color: var(--primary-light);
-    transform: translateX(5px);
+    color: var(--text-primary);
 }
 
 /* Анимации */
@@ -201,7 +280,7 @@ body {
     flex-wrap: wrap;
     gap: 1rem;
     padding: 1rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,.1);
 }

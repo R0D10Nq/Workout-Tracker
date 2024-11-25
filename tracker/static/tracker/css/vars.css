@@ -1,0 +1,75 @@
+/* Переменные для светлой темы */
+:root {
+    /* Основные цвета */
+    --primary-color: #4CAF50;
+    --primary-dark: #388E3C;
+    --primary-light: #C8E6C9;
+    --accent-color: #FF5722;
+    
+    /* Текст */
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --text-light: #ffffff;
+    
+    /* Фоны */
+    --background-light: #f8f9fa;
+    --background-dark: #343a40;
+    --card-bg: white;
+    
+    /* Состояния */
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Границы и тени */
+    --border-color: rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Размеры и отступы */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Скругления */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+    
+    /* Анимации */
+    --transition-fast: 0.2s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Переменные для темной темы */
+[data-theme="dark"] {
+    /* Основные цвета */
+    --primary-color: #66BB6A;
+    --primary-dark: #43A047;
+    --primary-light: #1B5E20;
+    --accent-color: #FF7043;
+    
+    /* Текст */
+    --text-primary: #E0E0E0;
+    --text-secondary: #BDBDBD;
+    --text-light: #ffffff;
+    
+    /* Фоны */
+    --background-light: #1E1E1E;
+    --background-dark: #121212;
+    --card-bg: #2D2D2D;
+    
+    /* Состояния остаются теми же */
+    
+    /* Границы и тени */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+}
