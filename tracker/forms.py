@@ -29,9 +29,12 @@ class ExerciseForm(forms.ModelForm):
 class WorkoutForm(forms.ModelForm):
     class Meta:
         model = Workout
-        fields = ['title', 'duration']
+        fields = ['title', 'start_time', 'duration', 'notes', 'mood']
         widgets = {
-            'duration': forms.TextInput(attrs={'placeholder': 'ЧЧ:ММ:СС'}),
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'duration': forms.TimeInput(attrs={'type': 'time'}),
+            'notes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Заметки о тренировке...'}),
+            'mood': forms.Select(attrs={'class': 'form-select'})
         }
 
     def clean_duration(self):
@@ -65,9 +68,19 @@ class WorkoutExerciseForm(forms.ModelForm):
 
 
 class SetForm(forms.ModelForm):
+    rest_time = forms.DurationField(
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'ММ:СС'}),
+        help_text='Формат: минуты:секунды (например, 01:30 для 1.5 минут)'
+    )
+
     class Meta:
         model = Set
-        fields = ['repetitions', 'weight']
+        fields = ['repetitions', 'weight', 'rest_time']
+        widgets = {
+            'repetitions': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.5', 'min': '0'}),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
@@ -78,3 +91,14 @@ class SetForm(forms.ModelForm):
             self.add_error('weight', 'Вес должен быть положительным числом.')
         if repetitions is not None and repetitions <= 0:
             self.add_error('repetitions', 'Количество повторений должно быть положительным числом.')
+
+    def clean_rest_time(self):
+        rest_time = self.cleaned_data.get('rest_time')
+        if rest_time and isinstance(rest_time, str):
+            try:
+                minutes, seconds = map(int, rest_time.split(':'))
+                from datetime import timedelta
+                rest_time = timedelta(minutes=minutes, seconds=seconds)
+            except ValueError:
+                raise forms.ValidationError('Введите время в формате ММ:СС')
+        return rest_time

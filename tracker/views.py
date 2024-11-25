@@ -27,6 +27,50 @@ def home(request):
         return render(request, 'tracker/home.html')
 
 
+def create_default_exercises(user):
+    # Создаем группы мышц
+    muscle_groups = {
+        'chest': MuscleGroup.objects.create(name='Грудные мышцы', user=user),
+        'back': MuscleGroup.objects.create(name='Спина', user=user),
+        'legs': MuscleGroup.objects.create(name='Ноги', user=user),
+        'shoulders': MuscleGroup.objects.create(name='Плечи', user=user),
+        'arms': MuscleGroup.objects.create(name='Руки', user=user),
+        'abs': MuscleGroup.objects.create(name='Пресс', user=user),
+    }
+
+    # Словарь упражнений: {'название': ['группа_мышц1', 'группа_мышц2']}
+    exercises_data = {
+        'Жим штанги лежа': ['chest', 'shoulders'],
+        'Отжимания от пола': ['chest', 'shoulders', 'arms'],
+        'Разведение гантелей лежа': ['chest'],
+        
+        'Подтягивания': ['back', 'arms'],
+        'Тяга штанги в наклоне': ['back'],
+        'Гиперэкстензия': ['back'],
+        
+        'Приседания со штангой': ['legs'],
+        'Жим ногами': ['legs'],
+        'Выпады с гантелями': ['legs'],
+        
+        'Жим штанги стоя': ['shoulders'],
+        'Разведение гантелей в стороны': ['shoulders'],
+        
+        'Подъем штанги на бицепс': ['arms'],
+        'Французский жим': ['arms'],
+        'Молотки': ['arms'],
+        
+        'Скручивания': ['abs'],
+        'Планка': ['abs'],
+        'Подъем ног в висе': ['abs'],
+    }
+
+    # Создаем упражнения и связываем их с группами мышц
+    for exercise_name, muscle_group_keys in exercises_data.items():
+        exercise = Exercise.objects.create(name=exercise_name, user=user)
+        for key in muscle_group_keys:
+            exercise.muscle_groups.add(muscle_groups[key])
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect('workout_history')
@@ -34,7 +78,9 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            create_default_exercises(user)  # Создаем упражнения для нового пользователя
             login(request, user)
+            messages.success(request, 'Регистрация успешна! Мы добавили список стандартных упражнений.')
             return redirect('workout_history')
     else:
         form = UserCreationForm()
@@ -86,7 +132,7 @@ def start_workout(request):
 @login_required
 def workout_session(request, workout_id):
     workout = get_object_or_404(Workout, id=workout_id, user=request.user)
-    exercises = WorkoutExercise.objects.filter(workout=workout)
+    workout_exercises = WorkoutExercise.objects.filter(workout=workout)
     if request.method == 'POST':
         # Обработка завершения тренировки
         workout.duration = timezone.now() - workout.start_time
@@ -94,7 +140,11 @@ def workout_session(request, workout_id):
         return redirect('workout_history')
     else:
         form = WorkoutExerciseForm(user=request.user)
-    return render(request, 'tracker/workout_session.html', {'workout': workout, 'exercises': exercises, 'form': form})
+    return render(request, 'tracker/workout_session.html', {
+        'workout': workout, 
+        'exercises': workout_exercises, 
+        'form': form
+    })
 
 
 @login_required
@@ -107,9 +157,7 @@ def add_workout_exercise(request, workout_id):
             workout_exercise.workout = workout
             workout_exercise.save()
             return redirect('workout_session', workout_id=workout.id)
-    else:
-        form = WorkoutExerciseForm(user=request.user)
-    return render(request, 'tracker/add_workout_exercise.html', {'form': form, 'workout': workout})
+    return redirect('workout_session', workout_id=workout.id)
 
 
 @login_required
@@ -264,6 +312,19 @@ def edit_workout(request, workout_id):
     else:
         form = WorkoutForm(instance=workout)
     return render(request, 'tracker/edit_workout.html', {'form': form, 'workout': workout})
+
+
+@login_required
+def reset_exercises(request):
+    # Удаляем все существующие упражнения и группы мышц пользователя
+    Exercise.objects.filter(user=request.user).delete()
+    MuscleGroup.objects.filter(user=request.user).delete()
+    
+    # Создаем стандартный набор заново
+    create_default_exercises(request.user)
+    
+    messages.success(request, 'Упражнения успешно сброшены к стандартному набору!')
+    return redirect('exercises')
 
 
 MONTH_NAMES = {

@@ -1,25 +1,71 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>
-        <a data-bs-toggle="collapse" href="#workoutDetails{{ workout.id }}" role="button" aria-expanded="false"
-           aria-controls="workoutDetails{{ workout.id }}">
-            {{ workout.title|default:"Тренировка" }} от {{ workout.start_time|date:"d.m.Y H:i" }}
-        </a>
-    </h2>
-    <p>Продолжительность: {{ workout.duration|default:"Не завершена" }}</p>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>{{ workout.title|default:"Тренировка" }}</h2>
+            <div>
+                <a href="{% url 'edit_workout' workout.id %}" class="btn btn-primary">Редактировать</a>
+                <a href="{% url 'delete_workout' workout.id %}" class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Дата:</strong> {{ workout.start_time|date:"d.m.Y H:i" }}</p>
+                    <p><strong>Продолжительность:</strong> {{ workout.duration|default:"Не указана" }}</p>
+                    {% if workout.mood %}
+                    <p><strong>Самочувствие:</strong> {{ workout.get_mood_display }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    {% if workout.notes %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Заметки</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ workout.notes|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
-    <h3>Упражнения</h3>
-    <ul>
-        {% for we in exercises %}
-            <li>
-                <strong>{{ we.exercise.name }}</strong>
-                <ul>
-                    {% for set in we.set_set.all %}
-                        <li>{{ set.repetitions }} повторений с весом {{ set.weight }} кг</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-    </ul>
+            <h3>Упражнения</h3>
+            {% for workout_exercise in workout.workoutexercise_set.all %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ workout_exercise.exercise.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Подход</th>
+                                <th>Вес (кг)</th>
+                                <th>Повторения</th>
+                                <th>Отдых</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for set in workout_exercise.set_set.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ set.weight }}</td>
+                                <td>{{ set.repetitions }}</td>
+                                <td>{{ set.rest_time|default:"—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% empty %}
+            <p>Нет добавленных упражнений</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}

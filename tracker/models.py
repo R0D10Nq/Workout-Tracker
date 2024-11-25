@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -7,17 +6,23 @@ from django.utils import timezone
 
 
 class MuscleGroup(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['name', 'user']
 
     def __str__(self):
         return self.name
 
 
 class Exercise(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    muscle_groups = models.ManyToManyField(MuscleGroup, blank=True)  # Разрешить пустые
+    muscle_groups = models.ManyToManyField(MuscleGroup, related_name='exercises')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['name', 'user']
 
     def __str__(self):
         return self.name
@@ -29,6 +34,19 @@ class Workout(models.Model):
     title = models.CharField(max_length=200, blank=True)
     start_time = models.DateTimeField(default=timezone.now)
     duration = models.DurationField(null=True, blank=True)
+    notes = models.TextField(blank=True, help_text="Общие заметки о тренировке")
+    mood = models.CharField(
+        max_length=20,
+        choices=[
+            ('great', 'Отличное'),
+            ('good', 'Хорошее'),
+            ('normal', 'Нормальное'),
+            ('tired', 'Уставший'),
+            ('bad', 'Плохое')
+        ],
+        blank=True,
+        help_text="Самочувствие во время тренировки"
+    )
 
     class Meta:
         indexes = [
@@ -44,19 +62,27 @@ class WorkoutExercise(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('workout', 'exercise')  # Предотвращение дублирования
+        unique_together = ('workout', 'exercise')
 
     def __str__(self):
-        return f"{self.exercise.name} in {self.workout}"
+        return f"{self.exercise.name} в {self.workout}"
 
 
 class Set(models.Model):
     workout_exercise = models.ForeignKey(WorkoutExercise, on_delete=models.CASCADE)
     repetitions = models.PositiveIntegerField()
     weight = models.FloatField()
+    rest_time = models.DurationField(
+        null=True, 
+        blank=True,
+        help_text="Время отдыха после этого подхода"
+    )
 
     def __str__(self):
-        return f"{self.repetitions} reps at {self.weight} kg"
+        base = f"{self.repetitions} повторений с весом {self.weight} кг"
+        if self.rest_time:
+            return f"{base} (отдых: {self.rest_time})"
+        return base
 
 
 class Profile(models.Model):

@@ -1,12 +1,82 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <h2>Добавить подход для упражнения {{ workout_exercise.exercise.name }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Добавить подход</button>
-    </form>
-    <a href="{% url 'add_workout_exercise' workout_id=workout_exercise.workout.id %}" class="btn btn-secondary mt-3">Вернуться
-        к упражнениям</a>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="mb-0">Добавить подход для упражнения {{ workout_exercise.exercise.name }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.weight.id_for_label }}" class="form-label">Вес (кг)</label>
+                        {{ form.weight }}
+                        {% if form.weight.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.weight.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.repetitions.id_for_label }}" class="form-label">Количество повторений</label>
+                        {{ form.repetitions }}
+                        {% if form.repetitions.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.repetitions.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.rest_time.id_for_label }}" class="form-label">Время отдыха</label>
+                        {{ form.rest_time }}
+                        <small class="form-text text-muted">{{ form.rest_time.help_text }}</small>
+                        {% if form.rest_time.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.rest_time.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Добавить подход</button>
+                        <a href="{% url 'add_workout_exercise' workout_id=workout_exercise.workout.id %}" class="btn btn-secondary">Вернуться к упражнениям</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if workout_exercise.set_set.exists %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3 class="mb-0">Текущие подходы</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Подход</th>
+                        <th>Вес (кг)</th>
+                        <th>Повторения</th>
+                        <th>Отдых</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for set in workout_exercise.set_set.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ set.weight }}</td>
+                        <td>{{ set.repetitions }}</td>
+                        <td>{{ set.rest_time|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -4,8 +4,8 @@ from .models import Workout, Exercise, Set, MuscleGroup, WorkoutExercise
 
 @admin.register(MuscleGroup)
 class MuscleGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user')
-    search_fields = ('name', 'user__username')
+    list_display = ('name',)
+    search_fields = ('name',)
     actions = ['delete_selected']
 
     def delete_selected(self, request, queryset):
@@ -16,8 +16,8 @@ class MuscleGroupAdmin(admin.ModelAdmin):
 
 @admin.register(Exercise)
 class ExerciseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user')
-    search_fields = ('name', 'user__username')
+    list_display = ('name',)
+    search_fields = ('name',)
     filter_horizontal = ('muscle_groups',)
 
 
