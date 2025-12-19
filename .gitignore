@@ -122,5 +122,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-nodu_modules
+node_modules
+node_modules/
+node_modules/*
 .idea
+.idea/
+.idea/*
